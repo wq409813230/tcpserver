@@ -7,7 +7,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.security.KeyStore;
 import java.util.Iterator;
 
 /**
@@ -50,6 +49,9 @@ public class TelnetServer {
                         if(key.isReadable()){
                             read(key);
                         }
+                        if(key.isWritable()){
+                            write(key);
+                        }
                         if(key.isConnectable()){
                             System.out.println("connected");
                         }
@@ -73,10 +75,9 @@ public class TelnetServer {
         ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
         SocketChannel socketChannel = serverSocketChannel.accept();
         socketChannel.configureBlocking(false);
+        socketChannel.register(key.selector(),SelectionKey.OP_READ);
         ByteBuffer channelBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
-        socketChannel.register(key.selector(),SelectionKey.OP_READ, channelBuffer);
-
-        channelBuffer.put("welcome to simple telnet server!".getBytes());
+        channelBuffer.put("welcome to simple telnet server!\r\n".getBytes());
         channelBuffer.flip();
         socketChannel.write(channelBuffer);
         channelBuffer.clear();
@@ -84,28 +85,53 @@ public class TelnetServer {
 
     private static void read(SelectionKey key) throws IOException{
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        ByteBuffer channelBuffer = (ByteBuffer)key.attachment();
+        ByteBuffer channelBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
+
+        //telnet echo
         /*while(socketChannel.read(channelBuffer) > 0){
             channelBuffer.flip();
             socketChannel.write(channelBuffer);
             channelBuffer.clear();
         }*/
 
+        //tcp datagram test
         socketChannel.read(channelBuffer);
 
-        int platformBufferSize = socketChannel.socket().getSendBufferSize();
-        channelBuffer = ByteBuffer.allocate(platformBufferSize * 5);
-        for(int i = 0; i < channelBuffer.capacity(); i++){
-            channelBuffer.put((byte)(65 + i % 25));
+        if(channelBuffer != null || !channelBuffer.hasRemaining()){
+            int platformBufferSize = socketChannel.socket().getSendBufferSize();
+            channelBuffer = ByteBuffer.allocate(platformBufferSize * 5);
+            for(int i = 0; i < channelBuffer.capacity(); i++){
+                channelBuffer.put((byte)(65 + i % 25));
+            }
+            channelBuffer.flip();
+            System.out.println("buffer total length : " + channelBuffer.capacity() + " bytes");
         }
-        channelBuffer.flip();
-        System.out.println("big net pkg,length : " + channelBuffer.capacity() + "bytes");
 
         int written = socketChannel.write(channelBuffer);
-        System.out.println("has written : " + written + "bytes");
+        System.out.println("has written : " + written + " bytes");
 
         if(channelBuffer.hasRemaining()){
-            System.out.println("write not finished,remain : " + channelBuffer.remaining());
+            System.out.println("write not finished,remain : " + channelBuffer.remaining() + " bytes");
+            channelBuffer.compact();
+            key.interestOps(SelectionKey.OP_WRITE);
+            if(key.attachment() == null){
+                key.attach(channelBuffer);
+            }
+        }
+    }
+
+    private static void write(SelectionKey key) throws IOException{
+        SocketChannel socketChannel = (SocketChannel) key.channel();
+        ByteBuffer channelBuffer = (ByteBuffer)key.attachment();
+        int written = socketChannel.write(channelBuffer);
+        System.out.println("has written : " + written + " bytes");
+
+        if(channelBuffer.hasRemaining()){
+            System.out.println("write not finished,remain : " + channelBuffer.remaining() + " bytes");
+            channelBuffer.compact();
+            key.interestOps(SelectionKey.OP_WRITE);
+        }else{
+            key.interestOps(SelectionKey.OP_WRITE & ~key.readyOps());
         }
     }
 }
