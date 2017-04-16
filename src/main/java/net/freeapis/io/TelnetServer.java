@@ -1,6 +1,5 @@
 package net.freeapis.io;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -8,8 +7,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.security.KeyStore;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * freeapis, Inc.
@@ -86,10 +85,27 @@ public class TelnetServer {
     private static void read(SelectionKey key) throws IOException{
         SocketChannel socketChannel = (SocketChannel) key.channel();
         ByteBuffer channelBuffer = (ByteBuffer)key.attachment();
-        while(socketChannel.read(channelBuffer) > 0){
+        /*while(socketChannel.read(channelBuffer) > 0){
             channelBuffer.flip();
             socketChannel.write(channelBuffer);
             channelBuffer.clear();
+        }*/
+
+        socketChannel.read(channelBuffer);
+
+        int platformBufferSize = socketChannel.socket().getSendBufferSize();
+        channelBuffer = ByteBuffer.allocate(platformBufferSize * 5);
+        for(int i = 0; i < channelBuffer.capacity(); i++){
+            channelBuffer.put((byte)(65 + i % 25));
+        }
+        channelBuffer.flip();
+        System.out.println("big net pkg,length : " + channelBuffer.capacity() + "bytes");
+
+        int written = socketChannel.write(channelBuffer);
+        System.out.println("has written : " + written + "bytes");
+
+        if(channelBuffer.hasRemaining()){
+            System.out.println("write not finished,remain : " + channelBuffer.remaining());
         }
     }
 }
