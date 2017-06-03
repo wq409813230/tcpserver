@@ -97,9 +97,9 @@ public class TelnetServer {
         //tcp datagram test
         socketChannel.read(channelBuffer);
 
-        if(channelBuffer != null || !channelBuffer.hasRemaining()){
+        /*if(channelBuffer != null || !channelBuffer.hasRemaining()){
             int platformBufferSize = socketChannel.socket().getSendBufferSize();
-            channelBuffer = ByteBuffer.allocate(platformBufferSize * 5);
+            channelBuffer = ByteBuffer.allocate(platformBufferSize * 10);
             for(int i = 0; i < channelBuffer.capacity(); i++){
                 channelBuffer.put((byte)(65 + i % 25));
             }
@@ -118,7 +118,7 @@ public class TelnetServer {
             if(key.attachment() == null){
                 key.attach(channelBuffer);
             }
-        }
+        }*/
     }
 
     private static void write(SelectionKey key) throws IOException{
