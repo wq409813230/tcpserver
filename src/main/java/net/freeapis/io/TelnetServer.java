@@ -113,6 +113,7 @@ public class TelnetServer {
         if(channelBuffer.hasRemaining()){
             System.out.println("write not finished,remain : " + channelBuffer.remaining() + " bytes");
             channelBuffer.compact();
+            channelBuffer.flip();
             key.interestOps(SelectionKey.OP_WRITE);
             if(key.attachment() == null){
                 key.attach(channelBuffer);
@@ -129,8 +130,10 @@ public class TelnetServer {
         if(channelBuffer.hasRemaining()){
             System.out.println("write not finished,remain : " + channelBuffer.remaining() + " bytes");
             channelBuffer.compact();
+            channelBuffer.flip();
             key.interestOps(SelectionKey.OP_WRITE);
         }else{
+            channelBuffer.clear();
             key.interestOps(SelectionKey.OP_WRITE & ~key.readyOps());
         }
     }
