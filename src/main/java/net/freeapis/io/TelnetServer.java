@@ -31,7 +31,7 @@ public class TelnetServer {
         Selector selector = null;
         ServerSocketChannel serverSocketChannel = null;
 
-        try{
+        /*try{
             selector = Selector.open();
             serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.configureBlocking(false);
@@ -68,7 +68,7 @@ public class TelnetServer {
             }catch (IOException e){
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 
     private static void accept(SelectionKey key) throws IOException {

@@ -1,4 +1,4 @@
-package com.lexing.protocol;
+package net.freapis.reactor;
 
 /**
  * 
@@ -25,6 +25,20 @@ public class ByteKit {
 		}while(charPos > 0);
 		return new String(buf);
 	}
+
+	public static String toBinaryString(byte[] bytes,boolean pretty){
+		StringBuilder binaryString = new StringBuilder();
+		int prettyPoint = 0;
+		for(byte b : bytes){
+			binaryString.append(toBinaryString(b));
+			if(pretty){
+				binaryString.append(0x20);
+				prettyPoint++;
+				if(prettyPoint % 8 == 0) binaryString.append("\n");
+			}
+		}
+		return binaryString.toString();
+	}
 	
 	public static String toHexString(byte b){
 		return new String(new char[]{
@@ -32,33 +46,21 @@ public class ByteKit {
 				digits[b & 0x0f]
 		});
 	}
-	/**
-	 * convert byte array to literal represented by the specified radix,hex or binary
-	 * @param source byte array to convert
-	 * @param radix convert radix
-	 * @return literal string ,if the byte array is empty, return null;
-	 * @throws IllegalArgumentException
-	 */
-	public static String toString(byte[] source,int radix){
-		if(source == null || source.length == 0) return null;
-		StringBuilder builder = new StringBuilder();
-		switch (radix) {
-			case 16:
-				for(byte b : source){
-					builder.append(toHexString(b));
-				}
-				break;
-			case 2:
-				for(byte b : source){
-					builder.append(toBinaryString(b));
-				}
-				break;
-			default:
-				throw new IllegalArgumentException("radix is not valid,expected 2 or 16");
+
+	public static String toHexString(byte[] bytes,boolean pretty){
+		StringBuilder hexString = new StringBuilder();
+		int prettyPoint = 0;
+		for(byte b : bytes){
+			hexString.append(toHexString(b));
+			if(pretty){
+				hexString.append(" ");
+				prettyPoint++;
+				if(prettyPoint % 16 == 0) hexString.append("\n");
+			}
 		}
-		return builder.toString();
+		return hexString.toString();
 	}
-	
+
 	public static int toInt(byte[] source) {
 		if (source == null || source.length == 0)
 			return 0;
@@ -98,6 +100,52 @@ public class ByteKit {
 		}
 		return b;
 	}
+
+	/**
+	 * reverse the byte array
+	 * @param source byte array to reverse
+	 * @param groupLength
+	 * peer group length,for example,
+	 * if you want reverse byte array according it's int values,
+	 * then the group length is 4,if according it's long values,
+	 * then the group length is 8.
+     */
+	public static void reverseBytes(byte[] source,int groupLength){
+
+		int totalLength = source.length;
+		if(totalLength % groupLength != 0 || groupLength == 0)
+			throw new IllegalArgumentException("invalid stepLength.");
+		int groupCount =  totalLength / groupLength;
+
+		byte swap;
+		int highStepPos;
+		int lowStepPos;
+
+		for(int i = 0; i < groupCount / 2; i++){
+			for(int j = 0; j < groupLength; j++){
+				lowStepPos = i * groupLength + j;
+				highStepPos = (groupCount - i - 1) * groupLength + j;
+				swap = source[lowStepPos];
+				source[lowStepPos] = source[highStepPos];
+				source[highStepPos] = swap;
+			}
+		}
+	}
+
+	public static byte[][] split2Groups(byte[] source,int groupLength){
+		int totalLength = source.length;
+		if(totalLength % groupLength != 0 || groupLength == 0)
+			throw new IllegalArgumentException("invalid stepLength.");
+		int groupCount =  totalLength / groupLength;
+
+		byte[][] result = new byte[groupCount][groupLength];
+		for(int i = 0; i < groupCount; i++){
+			for(int j = 0; j < groupLength; j++){
+				result[i][j] = source[i * groupLength + j];
+			}
+		}
+		return result;
+	}
 	
 	public static void main(String[] args) {
 		/*System.out.println(toString(new byte[]{-128,127,32,64},16));
@@ -108,6 +156,6 @@ public class ByteKit {
 		System.out.println(toInt(intToBytes(Integer.MAX_VALUE)));
 		
 		System.out.println(toString(intToBytes(2), 2));*/
-		System.out.println(toString(intToBytes(-1),2));
+		//System.out.println(toString(intToBytes(-1),2));
 	}
 }
