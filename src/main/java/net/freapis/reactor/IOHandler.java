@@ -26,7 +26,9 @@ public class IOHandler {
 
     private static final char PACKET_DELIMITER = 0x0D0A;//数据包分隔符，默认为回车换行'\r\n'
 
-    private static final long CLIENT_FORCE_CLOSE = 0xFFF4FFFD06000000L;
+    private static final long CLIENT_FORCE_CLOSE_UNIX = 0xFFF4FFFD06000000L;
+
+    private static final long CLIENT_FORCE_CLOSE_WINDOWS = 0x0300000000000000L;
 
     public IOHandler(Selector selector,SocketChannel socketChannel) throws Exception{
         this.socketChannel = socketChannel;
@@ -55,7 +57,9 @@ public class IOHandler {
         String line = null;
         //使用lastpacketPosition变量记住上次读取的数据包位置,解决数据包粘包的问题
         for(int i = lastPacketPosition; i < currentPosition; i++){
-            boolean isForceClose = (readBuffer.getLong(i) == CLIENT_FORCE_CLOSE);
+            boolean isForceClose = (
+                    readBuffer.getLong(i) == CLIENT_FORCE_CLOSE_UNIX
+                            || readBuffer.getLong(i) == CLIENT_FORCE_CLOSE_WINDOWS);
             if(isForceClose) socketChannel.close();
             if(readBuffer.getChar(i) == PACKET_DELIMITER){
                 byte[] packet = new byte[i - lastPacketPosition];

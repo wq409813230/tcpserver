@@ -157,5 +157,6 @@ public class ByteKit {
 		
 		System.out.println(toString(intToBytes(2), 2));*/
 		//System.out.println(toString(intToBytes(-1),2));
+		System.out.println(toHexString(longToBytes(216172782113783808L),false));
 	}
 }
