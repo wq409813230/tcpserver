@@ -1,4 +1,7 @@
-package net.freapis.reactor;
+package net.freeapis.reactor;
+
+import net.freeapis.reactor.tcp.TCPHandler;
+import net.freeapis.reactor.telnet.TelnetHandler;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -17,11 +20,16 @@ public class Reactor {
 
     private ServerSocketChannel serverSocketChannel;
 
+    private ServerType serverType;
+
+    public enum ServerType{telnet,tcp}
+
     private static final int DEFAULT_PORT = 9527;
 
     private static final int SELECT_TIMEOUT = 3000;
 
-    public Reactor() throws IOException{
+    public Reactor(ServerType serverType) throws IOException{
+        this.serverType = serverType;
         selector = Selector.open();
         serverSocketChannel = ServerSocketChannel.open();
         serverSocketChannel.configureBlocking(false);
@@ -55,7 +63,7 @@ public class Reactor {
 
     private void react(SelectionKey selectionKey) throws Exception{
         if(selectionKey.isAcceptable()){
-            new Acceptor().accept();
+            new Acceptor().accept(ServerType.tcp);
         }else{
             ((IOHandler)selectionKey.attachment()).handle();
         }
@@ -63,9 +71,18 @@ public class Reactor {
 
     class Acceptor{
 
-        public void accept() throws Exception{
+        public void accept(ServerType serverType) throws Exception{
             SocketChannel socketChannel = serverSocketChannel.accept();
-            new IOHandler(selector,socketChannel);
+            switch (serverType){
+                case telnet:
+                    new TelnetHandler(selector,socketChannel);
+                    break;
+                case tcp:
+                    new TCPHandler(selector,socketChannel);
+                    break;
+                default:
+                    break;
+            }
             System.out.println("accept new connection from channel " + socketChannel.socket().getRemoteSocketAddress());
         }
     }

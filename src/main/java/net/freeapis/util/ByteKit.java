@@ -1,4 +1,4 @@
-package net.freapis.reactor;
+package net.freeapis.util;
 
 /**
  * 

@@ -1,4 +1,4 @@
-package net.freapis.reactor;
+package net.freeapis.reactor.telnet;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
