@@ -6,6 +6,6 @@ package net.freeapis.reactor;
 public class NIOServer {
 
     public static void main(String[] args) throws Exception{
-        new Reactor(Reactor.ServerType.tcp).start();
+        new Reactor(Reactor.ServerType.telnet).start();
     }
 }

@@ -24,7 +24,7 @@ public abstract class IOHandler {
 
     private static final int DEFAULT_READ_BUFFER_SIZE = 1000;
 
-    private static final int DEFAULT_WRITE_BUFFER_SIZE = 1000;
+    private static final int DEFAULT_WRITE_BUFFER_SIZE = 1024000;
 
     protected static final long CLIENT_FORCE_CLOSE_UNIX = 0xFFF4FFFD06000000L;
 

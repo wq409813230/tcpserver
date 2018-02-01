@@ -63,7 +63,7 @@ public class Reactor {
 
     private void react(SelectionKey selectionKey) throws Exception{
         if(selectionKey.isAcceptable()){
-            new Acceptor().accept(ServerType.tcp);
+            new Acceptor().accept(this.serverType);
         }else{
             ((IOHandler)selectionKey.attachment()).handle();
         }

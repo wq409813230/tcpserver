@@ -2,6 +2,7 @@ package net.freeapis.reactor.telnet;
 
 import net.freeapis.reactor.IOHandler;
 
+import java.io.File;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -38,10 +39,10 @@ public class TelnetHandler extends IOHandler{
             }
         }
 
-        if(line != null){
+        if(line != null && !line.isEmpty()){
             selectionKey.interestOps(selectionKey.interestOps() & ~SelectionKey.OP_READ);
             writeBuffer.clear();
-            writeBuffer.put(CommandUtil.runShell(line).getBytes());
+            writeBuffer.put(CommandUtil.runShell(new File("C://"),line).getBytes());
             writeBuffer.flip();
             this.write();
         }
